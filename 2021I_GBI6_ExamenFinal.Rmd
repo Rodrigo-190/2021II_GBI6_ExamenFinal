@@ -82,7 +82,8 @@ getwd()
 
 ### [0.5 PUNTOS] 1.2. Cargue la data "mRNA_expr.csv"
 ```{r data}
-df <- read.csv("Data/mRNA_expr.csv", header = FALSE)
+#, header = FALSE
+df <- read.csv("Data/mRNA_expr.csv")
 df
 ```
 
@@ -91,7 +92,10 @@ df
 ```{r funcion_long}
 # Escriba aquí la función long_df
 
-
+library("tidyverse")
+long_df <- function(table){df_mRNA <- table %>% pivot_longer(!c(bcr_patient_barcode, dataset), names_to= "gen", values_to ="expresion_level")
+  return(df_mRNA)
+}
 ```
 
 
