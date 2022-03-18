@@ -87,14 +87,12 @@ df <- read.csv("Data/mRNA_expr.csv")
 df
 ```
 
-### [1 PUNTO] 1.3 Cree una función de nombre ```long_df``` para transformar la data ```df``` de la forma wide a long.
-
 ```{r funcion_long}
-# Escriba aquí la función long_df
-
 library("tidyverse")
-long_df <- function(table){df_mRNA <- table %>% pivot_longer(!c(bcr_patient_barcode, dataset), names_to= "gen", values_to ="expresion_level")
-  return(df_mRNA)
+library("dplyr")
+long_df <- function(table){
+  long_data <- table %>% pivot_longer(!c(bcr_patient_barcode, dataset), names_to= "gen", values_to ="expresion_level")
+  long_data
 }
 ```
 
@@ -102,14 +100,19 @@ long_df <- function(table){df_mRNA <- table %>% pivot_longer(!c(bcr_patient_barc
 ### [1 PUNTO] Genere la data ```df_long``` utilizandola función ```long_df```. 
 La tabla resultante tendrá tres columnas: ```dataset, gen, expresion_level```.  
 ```{r df_long}
-# Genere la data df_long 
-
+df_long <- long_df(df)
+df_long <- df_long[,-1]
+df_long
 ```
 
 ### [0.5 PUNTOS] 1.5 A partir de la data ```df_long```, genere un **Descriptive table** (librería ```sjPlot```) y guárdelo en el subdirectorio "result"  con el nombre **mRNA_expr_summary.doc** (previamente debe seleccionar las celdas adecuadas con funciones de la librería ```dplyr``` en conjunto con el operador ```%>%```). 
 ```{r desc_table}
-# Escriba el código para crear el Descriptive table 
-
+library("sjPlot")
+library("sjmisc")
+BRCA <- df_long %>% group_by(dataset,gen) %>% descr(out="viewer",file="./results/mRNA_expr_summary.doc")
+%>% write.table(file="./results/mRNA_expr_summary.doc")
+BRCA
+write.table(x=BRCA, file="results/mRNA_expr_summary.doc")
 ```
 
 ### [0.5 PUNTOS] 1.6 Interprete los resultados de la tabla resultante de la sección 1.5. 
@@ -117,7 +120,6 @@ La tabla resultante tendrá tres columnas: ```dataset, gen, expresion_level```.
 
 ```{tex}
 # Escriba aquí su interpretación 
-
 ```
 
 
@@ -129,46 +131,69 @@ Para esta pregunta tiene que utilizar la data ```df_long```.
 ### [1 PUNTO] 2.1 Cree la funcion ```tcga_boxplots``` para visualizar boxplots y jitterplots. El único parámetro de la función es ```dataset```. La función debe crear un boxplot de los niveles de expresión para cada gen.
 
 ```{r}
-# Escriba el código para crear la función tcga_boxplots
-
-
+library(ggplot2)
+tcga_boxplots <- function(data){
+  b <- df_long %>% filter (dataset == data)
+  c <- b %>% ggplot(aes(x=gen,y=expresion_level, color = gen)) +
+  geom_boxplot() + geom_jitter ()
+}
+#Ejemplo con el dataset "BRCA"
+d <- tcga_boxplots("KIRP")
+d
 ```
 
 ### [0.5 PUNTOS] 2.2 Utilizando la función ```lapply()``` genera la lista ```cancertype_boxplots``` con las gráficas para cada tipo de cancer (cada tipo de dataset). 
 ```{r list_boxplots}
-# Escriba el código para generar la lista. 
-
-
+e <- c("BRCA","OV","LUSC","KIPAN","KIRP","UCEC")
+cancertype_boxplots <- lapply(e, tcga_boxplots)
+cancertype_boxplots
 ```
 
 ### [0.5 PUNTOS] 2.3 Guarde en el subdirectorio ```result``` el tercer plot de la lista ```cancertype_boxplots``` con el nombre ```boxplot3.png```. La definición de a figura debe ser de 300dpi. 
 ```{r boxplot3}
-# Escriba el código para guardar la tercera figura de la lista. 
-
-
+p <- cancertype_boxplots[3]
+ggsave(plot = d, filename = "results/boxplot3.png", device="png",
+dpi = 300)
 ```
 
 
 ### [1 PUNTO] 2.4 Escriba la función ```reg_gen_expression```, con el parámetro ```gen```. En este caso la función visualizará una gráfica de nube de puntos (geom_point) y una regresión por tipo de "dataset". La gráfica será de comparación de gen1 con gen2; por ejemplo en el eje "x" ```GATA3``` y en el eje "y"" ```FN1```.  
 
 ```{r reg_gen_exp}
+reg_gen_expression <- function(genx,geny){
+  df_long1 <- df %>% pivot_longer(!c(bcr_patient_barcode, dataset), names_to= "gen1", values_to ="expresion_level1")
+  df_long2 <- df %>% pivot_longer(!c(bcr_patient_barcode, dataset), names_to= "gen2", values_to ="expresion_level2")
+  g <- df_long1 %>% filter (gen1 == genx)
+  j <- df_long2 %>% filter (gen2 == geny)
+  k <- merge(x=g, y=j, all=TRUE)
+  h <- k %>% ggplot(aes(x = expresion_level1, y = expresion_level2, color=dataset)) + geom_point() + geom_smooth(method=lm, se=FALSE)
+  h
+}
 # Escriba aquí su función reg_gen_expression
-
-
+i=reg_gen_expression("GATA3","PTEN")
+i
 ```
 
 
 ### [0.5 PUNTOS] 2.5. Utilizando la función ```lapply()``` genera la lista ```reg_genplots``` con las gráficas para cada par de genes posibles. Recuerde que tiene 7 tipos de genes, se debe tener todas las combinaciones posibles por pares de genes (combinatoria sin repetición).
 ```{r list_regplots}
+n <- c("GATA3","PTEN","XBP1","ESR1", "MUC1", "FN1", "GAPDH")
+l <- combn(n,m=2,simplify = FALSE)
+for (elem in l){
+  print (elem)
+  o <- c(o,elem[1])
+  p <- c(p,elem[2])
+  i=i+1
+}
+reg_genplots <- mapply(reg_gen_expression,o,p,SIMPLIFY = FALSE)
+reg_genplots
 # Escriba el código para generar la lista. 
-
 ```
 
 
 ### [0.5 PUNTOS] 2.6. Guarde en el subdirectorio ```result``` el onceavo plot de la lista ```reg_genplots``` con el nombre ```regresion11.pdf```. La definición de a figura debe ser de 300dpi. 
 ```{r reg11}
-# Escriba el código para guardar el onceavo plot. 
-
+#Escriba el código para guardar el onceavo plot. 
 ```
 
 
@@ -176,8 +201,6 @@ Para esta pregunta tiene que utilizar la data ```df_long```.
 
 ```{tex}
 # Esciba aquí su intepretación
-
 ```
 
 ## 3. CONTROL DE LA VERSIÓN [1 PUNTO]. Se verficará en ell repositorio de GitHub. 
-
