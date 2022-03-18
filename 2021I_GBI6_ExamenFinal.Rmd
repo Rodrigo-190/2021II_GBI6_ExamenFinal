@@ -151,7 +151,7 @@ cancertype_boxplots<-lapply(cancertype,tcga_boxplots)
 ```{r boxplot3}
 # Para llamar al tercer boxplot de la data
 cancertype_boxplots[[3]]
-# Para guardar en .png en el directorio 'data'
+# Para guardar en .png en el directorio 'reults'
 ggsave("results/boxplot3.png",dpi = 300)
 gene3=cancertype_boxplots[[3]]
 ```
@@ -160,19 +160,39 @@ gene3=cancertype_boxplots[[3]]
 ### [1 PUNTO] 2.4 Escriba la función ```reg_gen_expression```, con el parámetro ```gen```. En este caso la función visualizará una gráfica de nube de puntos (geom_point) y una regresión por tipo de "dataset". La gráfica será de comparación de gen1 con gen2; por ejemplo en el eje "x" ```GATA3``` y en el eje "y"" ```FN1```.  
 
 ```{r reg_gen_exp}
-
+library(ggplot2)
+library(ggthemes)
+reg_gen_expression <- function(f){
+  Gen1=f[1]
+  Gen2=f[2]
+  tx <- df_long %>% filter (gen == Gen1)
+  ty <- df_long %>% filter (gen == Gen2)
+  tz <- cbind(tx,ty) 
+  th <- tibble("dataset"=tz[,1],"gen1"=tz[,3],"gen2"=tz[,6]) 
+  Xx <- th %>% ggplot(aes(x = gen1, y = gen2, color=dataset)) + geom_point() + geom_smooth(method=lm, se=FALSE) + theme_solarized ( light = FALSE )
+  Xx
+}
 ```
 
 
 ### [0.5 PUNTOS] 2.5. Utilizando la función ```lapply()``` genera la lista ```reg_genplots``` con las gráficas para cada par de genes posibles. Recuerde que tiene 7 tipos de genes, se debe tener todas las combinaciones posibles por pares de genes (combinatoria sin repetición).
 ```{r list_regplots}
-
+a1 <- unique(df_long$gen) 
+b1 <- combn(a1,m=2,simplify = FALSE) 
+reg_genplots <- lapply(b1,reg_gen_expression)
+reg_genplots[[11]]
 ```
 
 
 ### [0.5 PUNTOS] 2.6. Guarde en el subdirectorio ```result``` el onceavo plot de la lista ```reg_genplots``` con el nombre ```regresion11.pdf```. La definición de a figura debe ser de 300dpi. 
 ```{r reg11}
 #Escriba el código para guardar el onceavo plot. 
+
+reg_genplots[[11]]
+# Para guardar en .pdf en el directorio 'reults'
+
+ggsave("results/regresion11.pdf",dpi = 300)
+
 ```
 
 
