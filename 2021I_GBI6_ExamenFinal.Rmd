@@ -120,6 +120,9 @@ descr(x=df_long %>% group_by(dataset,gen), out = "browser", encoding = "UTF-8",f
 
 ```{tex}
 # Escriba aquí su interpretación 
+ 
+# La data generada representa datos en mayor predominancia de BRCA (cancer de mama), el cual presenta una mayor predominancia en ESR1(un gen receptor de estrogeno) teniendo una media de 2.3. 
+
 ```
 
 
@@ -200,6 +203,11 @@ ggsave("results/regresion11.pdf",dpi = 300)
 
 ```{tex}
 # Esciba aquí su intepretación
+
+# En el boxplot3, representa la expresion de gen, para cada uno de los genes presentados en la data, se logra visualizar que la mayoria de los datos no siguen una distribucion normal 
+
+# En la regresion lineal multiple, se puede visualizar que hay una concentracion de datos en ciertas secciones especificamente para los genes 'BRCA' y 'OV' 
+
 ```
 
 ## 3. CONTROL DE LA VERSIÓN [1 PUNTO]. Se verficará en ell repositorio de GitHub. 
