@@ -92,8 +92,7 @@ library("reshape2")
 library("dplyr")
 library("tidyverse")
 long_df <- function(table){longdata <- table %>% pivot_longer(!c(bcr_patient_barcode, dataset), names_to= "gen", values_to ="expresion_level")
-  return(longdata)
-}
+  return(longdata)}
 ```
 
 
@@ -111,10 +110,9 @@ head(df_long,10)
 ```{r desc_table}
 library(sjmisc)
 library(dplyr)
+library(sjPlot)
 
-descr(x=df_long %>% group_by(dataset,gen),
-      out = "browser",
-      encoding = "UTF-8",file = "results/mRNA_expr_summary.doc")
+descr(x=df_long %>% group_by(dataset,gen), out = "browser", encoding = "UTF-8",file = "results/mRNA_expr_summary.doc")
 ```
 
 ### [0.5 PUNTOS] 1.6 Interprete los resultados de la tabla resultante de la sección 1.5. 
@@ -133,17 +131,29 @@ Para esta pregunta tiene que utilizar la data ```df_long```.
 ### [1 PUNTO] 2.1 Cree la funcion ```tcga_boxplots``` para visualizar boxplots y jitterplots. El único parámetro de la función es ```dataset```. La función debe crear un boxplot de los niveles de expresión para cada gen.
 
 ```{r}
+library(ggplot2)
+library(ggthemes)
+ tcga_boxplots<- function(data){
+  first.filter <- df_long %>% filter (dataset == data)
+  second.filter <- first.filter %>% ggplot(aes(x=gen,y=expresion_level, color = gen)) +
+  geom_boxplot() + geom_jitter () + theme_solarized ( light = FALSE )
+}
 
 ```
 
 ### [0.5 PUNTOS] 2.2 Utilizando la función ```lapply()``` genera la lista ```cancertype_boxplots``` con las gráficas para cada tipo de cancer (cada tipo de dataset). 
 ```{r list_boxplots}
-
+cancertype<-unique(df_long$dataset)
+cancertype_boxplots<-lapply(cancertype,tcga_boxplots)
 ```
 
 ### [0.5 PUNTOS] 2.3 Guarde en el subdirectorio ```result``` el tercer plot de la lista ```cancertype_boxplots``` con el nombre ```boxplot3.png```. La definición de a figura debe ser de 300dpi. 
 ```{r boxplot3}
-
+# Para llamar al tercer boxplot de la data
+cancertype_boxplots[[3]]
+# Para guardar en .png en el directorio 'data'
+ggsave("results/boxplot3.png",dpi = 300)
+gene3=cancertype_boxplots[[3]]
 ```
 
 
